@@ -33,39 +33,22 @@
 
 <script type="module">
   // 1. Mengimpor modul Firebase
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
-  // 2. GANTI BAGIAN INI DENGAN FIREBASE CONFIG ANDA DARI LANGKAH 2!
+  // PASTIKAN FORMATNYA PERSIS SEPERTI INI (ADA TANDA SAMA DENGAN)
   const firebaseConfig = {
- // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyAJyUcVQCqyqhGDlF1juOPab6g_X4E9uMI",
-  authDomain: "verval-stunting.firebaseapp.com",
-  projectId: "verval-stunting",
-  storageBucket: "verval-stunting.firebasestorage.app",
-  messagingSenderId: "441009850036",
-  appId: "1:441009850036:web:33c7412a8fa8733fce39e1",
-  measurementId: "G-QW8HZH6QZZ"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+    apiKey: "GANTI_DENGAN_API_KEY_ANDA",
+    authDomain: "GANTI_DENGAN_AUTH_DOMAIN_ANDA",
+    projectId: "GANTI_DENGAN_PROJECT_ID_ANDA",
+    storageBucket: "GANTI_DENGAN_STORAGE_BUCKET_ANDA",
+    messagingSenderId: "GANTI_DENGAN_SENDER_ID_ANDA",
+    appId: "GANTI_DENGAN_APP_ID_ANDA"
   };
 
-  // 3. Inisialisasi Firebase & Authentication
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  // Mengambil elemen HTML
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
   const btnLogin = document.getElementById('btnLogin');
@@ -73,42 +56,33 @@ const analytics = getAnalytics(app);
   const btnLogout = document.getElementById('btnLogout');
   const statusTeks = document.getElementById('status');
 
-  // Mengecek apakah ada yang sedang login
+  // Cek jika sudah login, langsung pindah ke form verval
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      statusTeks.innerText = "Selamat datang, " + user.email;
-      emailInput.style.display = "none";
-      passwordInput.style.display = "none";
-      btnLogin.style.display = "none";
-      btnDaftar.style.display = "none";
-      btnLogout.style.display = "block";
+      window.location.href = "menu_utama.html"; 
     } else {
       statusTeks.innerText = "Silakan login atau daftar.";
-      emailInput.style.display = "block";
-      passwordInput.style.display = "block";
-      btnLogin.style.display = "block";
-      btnDaftar.style.display = "block";
-      btnLogout.style.display = "none";
     }
   });
 
-  // Aksi ketika tombol "Daftar Akun Baru" diklik
+  // Tombol Daftar
   btnDaftar.addEventListener('click', () => {
     createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
-      .then((userCredential) => { alert("Pendaftaran Berhasil! Anda otomatis masuk."); })
+      .then((userCredential) => { 
+          alert("Pendaftaran Berhasil! Lanjut ke Menu Utama."); 
+          window.location.href = "menu_utama.html";
+      })
       .catch((error) => { alert("Gagal Daftar: " + error.message); });
   });
 
-  // Aksi ketika tombol "Masuk (Login)" diklik
+  // Tombol Login
   btnLogin.addEventListener('click', () => {
     signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
-      .then((userCredential) => { alert("Login Berhasil!"); })
+      .then((userCredential) => { 
+          alert("Login Berhasil!"); 
+          window.location.href = "menu_utama.html";
+      })
       .catch((error) => { alert("Gagal Login: Cek kembali email dan password Anda."); });
-  });
-
-  // Aksi ketika tombol "Keluar (Logout)" diklik
-  btnLogout.addEventListener('click', () => {
-    signOut(auth).then(() => { alert("Anda telah keluar."); });
   });
 </script>
 
