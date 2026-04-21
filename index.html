@@ -6,6 +6,14 @@
 <title>Form Verval Stunting 2026</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- FIREBASE SDK - GANTI CONFIG DENGAN MILIK ANDA -->
+<!-- ═══════════════════════════════════════════ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
 <style>
 :root {
   --bg:#eef2f7;--card:#fff;--primary:#0b63ce;--primaryDk:#083d7f;--primaryLt:#dbeafe;
@@ -19,7 +27,39 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .page{display:none;animation:fadeUp .35s ease}
 .page.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── LOGIN STYLES ─── */
+.login-wrapper{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0b63ce 0%,#083d7f 50%,#051d3e 100%);padding:20px;position:relative;overflow:hidden}
+.login-wrapper::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:rgba(255,255,255,.03);top:-150px;right:-100px}
+.login-wrapper::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.02);bottom:-80px;left:-60px}
+.login-box{background:#fff;border-radius:20px;padding:40px 32px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;z-index:1}
+.login-box .logo{text-align:center;margin-bottom:28px}
+.login-box .logo .icon{font-size:52px;margin-bottom:8px}
+.login-box .logo h1{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.5px}
+.login-box .logo p{font-size:13px;color:var(--text2);margin-top:4px}
+.login-box .form-group{margin-bottom:16px}
+.login-box .form-group label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.login-box .form-group input{width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid var(--border);font-size:14px;font-family:inherit;outline:none;background:#f8fafc;transition:all .2s}
+.login-box .form-group input:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(11,99,206,.1)}
+.login-box .error-msg{background:var(--redLt);color:var(--red);padding:10px 14px;border-radius:10px;font-size:12px;font-weight:600;margin-bottom:16px;display:none;animation:shake .4s}
+.login-box .btn-login{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--primary),var(--primaryDk));color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .1s,opacity .2s;position:relative}
+.login-box .btn-login:hover{opacity:.92}
+.login-box .btn-login:active{transform:scale(.98)}
+.login-box .btn-login:disabled{opacity:.6;cursor:wait}
+.login-box .btn-login .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+.login-box .toggle-link{text-align:center;margin-top:16px;font-size:13px;color:var(--text2)}
+.login-box .toggle-link a{color:var(--primary);font-weight:700;cursor:pointer;text-decoration:none}
+.login-box .toggle-link a:hover{text-decoration:underline}
+.login-box .divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text2);font-size:12px}
+.login-box .divider::before,.login-box .divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.user-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(0,0,0,.15);border-radius:10px;margin-bottom:12px;backdrop-filter:blur(8px)}
+.user-bar .user-info{font-size:12px;color:rgba(255,255,255,.85);display:flex;align-items:center;gap:6px}
+.user-bar .user-info strong{color:#fff}
+.btn-logout{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s}
+.btn-logout:hover{background:rgba(255,255,255,.25)}
 
 .topbar{background:linear-gradient(135deg,var(--primary),var(--primaryDk));color:#fff;padding:16px 20px;position:sticky;top:0;z-index:50}
 .topbar .wrap{max-width:540px;margin:0 auto}
@@ -29,9 +69,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .topbar .sub{font-size:12px;opacity:.75;margin-top:2px}
 
 .container{max-width:540px;margin:0 auto;padding:16px 20px 40px}
-
-/* HOME */
-.hero{text-align:center;color:#fff;padding:50px 20px 30px}
+.hero{text-align:center;color:#fff;padding:50px 20px 10px}
 .hero .icon{font-size:64px;margin-bottom:12px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.2))}
 .hero h1{font-size:26px;font-weight:800;letter-spacing:-.5px}
 .hero p{font-size:13px;opacity:.8;margin-top:6px}
@@ -41,7 +79,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .input-card input,.input-card select{width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;font-family:inherit;outline:none;background:#f8fafc;transition:border .2s}
 .input-card input:focus,.input-card select:focus{border-color:var(--primary);background:#fff}
 
-.desa-card{background:var(--card);border-radius:var(--radius);padding:20px;margin-bottom:12px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s;cursor:pointer}
+.desa-card{background:var(--card);border-radius:var(--radius);padding:20px;margin-bottom:12px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
 .desa-card:hover{transform:translateY(-2px);box-shadow:var(--shadowLg)}
 .desa-card .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .desa-card .name{font-size:18px;font-weight:800}
@@ -55,7 +93,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .btn-amber{background:var(--amber);color:#fff}
 .btn-full{width:100%;display:block}
 
-/* CHILDREN LIST */
 .search-box{width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid var(--border);font-size:14px;font-family:inherit;outline:none;background:#fff;margin-bottom:12px;box-shadow:var(--shadow)}
 .search-box:focus{border-color:var(--primary)}
 
@@ -73,7 +110,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .progress-bar{height:4px;border-radius:2px;background:#f1f5f9;margin-top:8px;overflow:hidden}
 .progress-bar .fill{height:100%;border-radius:2px;transition:width .4s}
 
-/* FORM */
 .tab-scroll{display:flex;gap:6px;overflow-x:auto;padding:12px 0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .tab-scroll::-webkit-scrollbar{display:none}
 .tab-btn{flex-shrink:0;padding:8px 14px;border-radius:20px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;background:#fff;color:var(--text);box-shadow:var(--shadow);white-space:nowrap;transition:all .15s}
@@ -89,9 +125,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .field input,.field select,.field textarea{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;font-family:inherit;outline:none;background:#f8fafc;transition:all .2s}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(11,99,206,.08)}
 .field input.filled,.field select.filled{background:var(--primaryLt);border-color:rgba(11,99,206,.3)}
-.field.conditional-field{border-left:3px solid var(--amber);padding-left:14px;margin-left:4px;animation:slideDown .3s ease}
-.field.conditional-field label::before{content:"↳ ";color:var(--amber)}
-@keyframes slideDown{from{opacity:0;max-height:0;margin-bottom:0}to{opacity:1;max-height:120px;margin-bottom:16px}}
 
 .nav-btns{display:flex;gap:8px;margin-top:12px}
 
@@ -103,7 +136,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .pbar-top .track .fill{height:100%;border-radius:2px;background:#fff;transition:width .3s}
 .pbar-top .pct{font-size:11px;opacity:.8}
 
-/* REKAP */
 .stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
 .stat-box{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:var(--shadow)}
 .stat-box .num{font-size:26px;font-weight:800}
@@ -121,9 +153,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .detail-row .dmeta{font-size:10px;color:var(--text2);margin-top:2px}
 
 .export-bar{display:flex;gap:8px;margin-bottom:16px}
-
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;box-shadow:var(--shadowLg);animation:fadeUp .3s ease;color:#fff}
-
 .section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px;color:rgba(255,255,255,.7)}
 
 @media print{.no-print{display:none!important}.page{display:block!important}}
@@ -133,8 +163,76 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 <div id="toast" class="toast" style="display:none"></div>
 
-<!-- ═══════ HOME ═══════ -->
-<div id="page-home" class="page active">
+<!-- ═══════════════════════════════════════════ -->
+<!-- LOGIN PAGE -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="page-login" class="page active">
+  <div class="login-wrapper">
+    <div class="login-box">
+      <div class="logo">
+        <div class="icon">🔐</div>
+        <h1>Verval Stunting 2026</h1>
+        <p>Kec. Batulayar — Silakan login untuk melanjutkan</p>
+      </div>
+
+      <div id="login-error" class="error-msg"></div>
+
+      <!-- LOGIN FORM -->
+      <div id="form-login">
+        <div class="form-group">
+          <label>📧 Email</label>
+          <input type="email" id="login-email" placeholder="contoh@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>🔑 Password</label>
+          <input type="password" id="login-password" placeholder="Masukkan password" autocomplete="current-password">
+        </div>
+        <button class="btn-login" id="btn-do-login" onclick="doLogin()">
+          <span class="btn-text">Masuk</span>
+          <div class="spinner"></div>
+        </button>
+        <div class="toggle-link">
+          Belum punya akun? <a onclick="toggleAuthForm('register')">Daftar di sini</a>
+        </div>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="form-register" style="display:none">
+        <div class="form-group">
+          <label>👤 Nama Lengkap</label>
+          <input type="text" id="reg-name" placeholder="Nama Anda">
+        </div>
+        <div class="form-group">
+          <label>📧 Email</label>
+          <input type="email" id="reg-email" placeholder="contoh@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>🔑 Password</label>
+          <input type="password" id="reg-password" placeholder="Minimal 6 karakter" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label>🔑 Konfirmasi Password</label>
+          <input type="password" id="reg-password2" placeholder="Ulangi password">
+        </div>
+        <button class="btn-login" id="btn-do-register" onclick="doRegister()">
+          <span class="btn-text">Daftar Akun</span>
+          <div class="spinner"></div>
+        </button>
+        <div class="toggle-link">
+          Sudah punya akun? <a onclick="toggleAuthForm('login')">Login di sini</a>
+        </div>
+      </div>
+
+      <div class="divider">Kec. Batulayar</div>
+      <p style="text-align:center;font-size:11px;color:var(--text2)">Hubungi admin jika belum memiliki akses</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- HOME PAGE -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="page-home" class="page">
   <div style="background:linear-gradient(135deg,var(--primary),var(--primaryDk));min-height:100vh">
     <div class="hero">
       <div class="icon">📊</div>
@@ -142,21 +240,24 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <p>Sistem Input Data Individu Balita Stunting</p>
     </div>
     <div class="container" style="padding-top:0">
-      <div class="input-card">
-        <label>👤 Nama Pengisi Data</label>
-        <input type="text" id="inputBy" placeholder="Isi nama Anda agar tercatat...">
-        <p style="font-size:11px;color:var(--text2);margin-top:6px">Nama akan tercatat di setiap data yang Anda isi</p>
+
+      <!-- User bar -->
+      <div class="user-bar no-print" id="user-bar">
+        <div class="user-info">👤 Login sebagai: <strong id="display-user">-</strong></div>
+        <button class="btn-logout" onclick="doLogout()">Logout</button>
       </div>
-      <div class="section-title">Pilih Desa</div>
+
       <div id="desa-list"></div>
       <p style="text-align:center;margin-top:20px;color:rgba(255,255,255,.5);font-size:11px">
-        Data tersimpan online & bisa diakses banyak pengguna secara bersamaan
+        Data tersimpan di Firebase & bisa diakses banyak pengguna
       </p>
     </div>
   </div>
 </div>
 
-<!-- ═══════ CHILDREN LIST ═══════ -->
+<!-- ═══════════════════════════════════════════ -->
+<!-- CHILDREN LIST PAGE -->
+<!-- ═══════════════════════════════════════════ -->
 <div id="page-children" class="page">
   <div class="topbar no-print">
     <div class="wrap">
@@ -171,7 +272,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   </div>
 </div>
 
-<!-- ═══════ FORM ═══════ -->
+<!-- ═══════════════════════════════════════════ -->
+<!-- FORM PAGE -->
+<!-- ═══════════════════════════════════════════ -->
 <div id="page-form" class="page">
   <div class="topbar no-print">
     <div class="wrap">
@@ -195,7 +298,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   </div>
 </div>
 
-<!-- ═══════ REKAP ═══════ -->
+<!-- ═══════════════════════════════════════════ -->
+<!-- REKAP PAGE -->
+<!-- ═══════════════════════════════════════════ -->
 <div id="page-rekap" class="page">
   <div class="topbar no-print">
     <div class="wrap">
@@ -208,6 +313,26 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════
+// ██  FIREBASE CONFIG — GANTI DENGAN CONFIG ANDA  ██
+// ═══════════════════════════════════════════════════════════════
+//
+// PETUNJUK: Salin konfigurasi dari Firebase Console Anda
+// ke bagian di bawah ini. Lihat panduan di bawah kode.
+//
+const firebaseConfig = {
+  apiKey: "AIzaSyBz29qw29UzNm8opsRBqOU_HtZrM1sw9Qw",
+  authDomain: "vervalstunting2026.firebaseapp.com",
+  projectId: "vervalstunting2026",
+  storageBucket: "vervalstunting2026.firebasestorage.app",
+  messagingSenderId: "440543112659",
+  appId: "1:440543112659:web:9ee78dae06f65a2b559326"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 // ═══════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════
@@ -272,10 +397,8 @@ const FIELD_GROUPS = [
   ]},
   { title:"Kesehatan Anak", icon:"💊", fields:[
     {key:"imunisasi",label:"Status Imunisasi Lengkap",type:"select",opts:["","Lengkap","Tidak Lengkap","Belum Imunisasi"]},
-    {key:"imunisasi_ket",label:"Keterangan Imunisasi Tidak Lengkap",type:"text",ph:"Imunisasi apa saja yang belum?",showIf:{key:"imunisasi",val:["Tidak Lengkap","Belum Imunisasi"]}},
     {key:"penyakit",label:"Penyakit Yg Sering Diderita",type:"text"},
     {key:"kelainan",label:"Kelainan Bawaan",type:"select",opts:["","Ada","Tidak Ada"]},
-    {key:"kelainan_ket",label:"Keterangan Kelainan Bawaan",type:"text",ph:"Sebutkan jenis kelainan bawaan...",showIf:{key:"kelainan",val:["Ada"]}},
     {key:"mantoux",label:"Hasil Tes Mantoux",type:"select",opts:["","Positif","Negatif","Belum Diperiksa"]},
     {key:"hb",label:"Hasil Periksa Hb (g/dL)",type:"text",ph:"Contoh: 11.5"},
     {key:"maltofer",label:"Obat/Vitamin (Maltofer)",type:"select",opts:["","Ya","Tidak"]},
@@ -308,6 +431,7 @@ FIELD_GROUPS.forEach(g => g.fields.forEach(f => { ALL_LABELS[f.key] = f.label; }
 // ═══════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════
+let currentUser = null;
 let currentDesa = '';
 let currentChild = '';
 let formData = {};
@@ -315,33 +439,126 @@ let activeTab = 0;
 let childStatuses = {};
 
 // ═══════════════════════════════════════════
-// STORAGE (localStorage fallback)
+// AUTH FUNCTIONS
 // ═══════════════════════════════════════════
-function sKey(desa, child) {
-  return 'stunting2026_' + desa + '_' + child.replace(/[^a-zA-Z0-9]/g, '_');
+function toggleAuthForm(mode) {
+  document.getElementById('form-login').style.display = mode === 'login' ? 'block' : 'none';
+  document.getElementById('form-register').style.display = mode === 'register' ? 'block' : 'none';
+  document.getElementById('login-error').style.display = 'none';
 }
 
-async function storageGet(key) {
-  try {
-    if (window.storage) {
-      const r = await window.storage.get(key, true);
-      return r ? JSON.parse(r.value) : null;
-    }
-  } catch(e) {}
-  try {
-    const v = localStorage.getItem(key);
-    return v ? JSON.parse(v) : null;
-  } catch(e) { return null; }
+function showAuthLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  btn.querySelector('.btn-text').style.display = loading ? 'none' : 'inline';
+  btn.querySelector('.spinner').style.display = loading ? 'block' : 'none';
 }
 
-async function storageSet(key, val) {
-  const str = JSON.stringify(val);
+function showAuthError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value;
+  if (!email || !pass) return showAuthError('Email dan password harus diisi!');
+  showAuthLoading('btn-do-login', true);
   try {
-    if (window.storage) {
-      await window.storage.set(key, str, true);
-    }
-  } catch(e) {}
-  try { localStorage.setItem(key, str); } catch(e) {}
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch (e) {
+    const msgs = {
+      'auth/user-not-found': 'Akun tidak ditemukan. Silakan daftar terlebih dahulu.',
+      'auth/wrong-password': 'Password salah. Silakan coba lagi.',
+      'auth/invalid-email': 'Format email tidak valid.',
+      'auth/too-many-requests': 'Terlalu banyak percobaan. Coba lagi nanti.',
+      'auth/invalid-credential': 'Email atau password salah.'
+    };
+    showAuthError(msgs[e.code] || 'Login gagal: ' + e.message);
+  }
+  showAuthLoading('btn-do-login', false);
+}
+
+async function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-password').value;
+  const pass2 = document.getElementById('reg-password2').value;
+  if (!name || !email || !pass) return showAuthError('Semua field harus diisi!');
+  if (pass.length < 6) return showAuthError('Password minimal 6 karakter!');
+  if (pass !== pass2) return showAuthError('Password tidak cocok!');
+  showAuthLoading('btn-do-register', true);
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: name });
+    // Simpan info user ke Firestore
+    await db.collection('users').doc(cred.user.uid).set({
+      name: name, email: email, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) {
+    const msgs = {
+      'auth/email-already-in-use': 'Email sudah terdaftar. Silakan login.',
+      'auth/weak-password': 'Password terlalu lemah. Minimal 6 karakter.',
+      'auth/invalid-email': 'Format email tidak valid.'
+    };
+    showAuthError(msgs[e.code] || 'Pendaftaran gagal: ' + e.message);
+  }
+  showAuthLoading('btn-do-register', false);
+}
+
+function doLogout() {
+  if (confirm('Yakin ingin logout?')) auth.signOut();
+}
+
+// ═══════ AUTH STATE LISTENER ═══════
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  if (user) {
+    document.getElementById('display-user').textContent = user.displayName || user.email;
+    showPage('home');
+    renderHome();
+  } else {
+    showPage('login');
+  }
+});
+
+// Allow Enter key to submit
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('form-login').style.display !== 'none' && document.getElementById('page-login').classList.contains('active')) doLogin();
+    if (document.getElementById('form-register').style.display !== 'none' && document.getElementById('page-login').classList.contains('active')) doRegister();
+  }
+});
+
+// ═══════════════════════════════════════════
+// FIRESTORE DATA FUNCTIONS
+// ═══════════════════════════════════════════
+function docId(desa, child) {
+  return (desa + '_' + child).replace(/[\/\.]/g, '_');
+}
+
+async function fbGet(desa, child) {
+  try {
+    const doc = await db.collection('stunting2026').doc(docId(desa, child)).get();
+    return doc.exists ? doc.data() : null;
+  } catch (e) { console.error('fbGet error', e); return null; }
+}
+
+async function fbSet(desa, child, data) {
+  try {
+    await db.collection('stunting2026').doc(docId(desa, child)).set(data, { merge: true });
+    return true;
+  } catch (e) { console.error('fbSet error', e); return false; }
+}
+
+async function fbGetAllDesa(desa) {
+  try {
+    const snap = await db.collection('stunting2026').where('_desa', '==', desa).get();
+    const result = {};
+    snap.forEach(doc => { result[doc.data()._nama] = doc.data(); });
+    return result;
+  } catch (e) { console.error('fbGetAll error', e); return {}; }
 }
 
 // ═══════════════════════════════════════════
@@ -368,15 +585,12 @@ function showPage(id) {
 // HOME
 // ═══════════════════════════════════════════
 function renderHome() {
-  const el = document.getElementById('desa-list');
-  el.innerHTML = Object.keys(DESA_DATA).map(desa => `
+  document.getElementById('desa-list').innerHTML = Object.keys(DESA_DATA).map(desa => `
     <div class="desa-card">
-      <div class="head">
-        <div>
-          <div class="name">🏘️ Desa ${desa}</div>
-          <div class="count">${DESA_DATA[desa].length} balita stunting</div>
-        </div>
-      </div>
+      <div class="head"><div>
+        <div class="name">🏘️ Desa ${desa}</div>
+        <div class="count">${DESA_DATA[desa].length} balita stunting</div>
+      </div></div>
       <div class="btns">
         <button class="btn btn-primary" onclick="openChildren('${desa}')">📝 Input Data</button>
         <button class="btn btn-outline" onclick="openRekap('${desa}')">📊 Rekap</button>
@@ -392,26 +606,25 @@ async function openChildren(desa) {
   currentDesa = desa;
   document.getElementById('children-title').textContent = '🏘️ Desa ' + desa;
   document.getElementById('searchChild').value = '';
+  document.getElementById('children-list').innerHTML = '<p style="text-align:center;padding:30px;color:var(--text2)">Memuat data...</p>';
+  showPage('children');
   await loadChildStatuses(desa);
   renderChildren();
   document.getElementById('children-sub').textContent = DESA_DATA[desa].length + ' balita';
-  showPage('children');
 }
 
 async function loadChildStatuses(desa) {
   childStatuses = {};
-  for (const child of DESA_DATA[desa]) {
-    const d = await storageGet(sKey(desa, child));
-    if (d) {
-      const filled = ALL_KEYS.filter(k => d[k] && d[k] !== '').length;
-      childStatuses[child] = { filled, total: ALL_KEYS.length, inputBy: d._inputBy || '' };
-    }
+  const allData = await fbGetAllDesa(desa);
+  for (const [name, d] of Object.entries(allData)) {
+    const filled = ALL_KEYS.filter(k => d[k] && d[k] !== '').length;
+    childStatuses[name] = { filled, total: ALL_KEYS.length, inputBy: d._inputBy || '' };
   }
 }
 
 function renderChildren(filter) {
   const list = DESA_DATA[currentDesa].filter(c => !filter || c.toLowerCase().includes(filter.toLowerCase()));
-  document.getElementById('children-list').innerHTML = list.map((child, i) => {
+  document.getElementById('children-list').innerHTML = list.map((child) => {
     const s = childStatuses[child];
     const pct = s ? Math.round((s.filled / s.total) * 100) : 0;
     const isDone = pct >= 80;
@@ -441,20 +654,19 @@ async function openForm(desa, child) {
   currentChild = child;
   activeTab = 0;
   document.getElementById('form-title').textContent = child;
-  const d = await storageGet(sKey(desa, child));
+  document.getElementById('form-fields').innerHTML = '<p style="text-align:center;padding:20px;color:var(--text2)">Memuat...</p>';
+  showPage('form');
+  const d = await fbGet(desa, child);
   formData = d || {};
   renderForm();
-  showPage('form');
 }
 
 function renderForm() {
-  // Progress
   const filled = ALL_KEYS.filter(k => formData[k] && formData[k] !== '').length;
   const pct = Math.round((filled / ALL_KEYS.length) * 100);
   document.getElementById('form-progress-fill').style.width = pct + '%';
   document.getElementById('form-progress-pct').textContent = pct + '%';
 
-  // Tabs
   document.getElementById('tab-scroll').innerHTML = FIELD_GROUPS.map((g, i) => {
     const gf = g.fields.filter(f => formData[f.key] && formData[f.key] !== '').length;
     const cnt = gf > 0 ? `<span class="cnt">${gf}/${g.fields.length}</span>` : '';
@@ -462,34 +674,24 @@ function renderForm() {
     return `<button class="tab-btn ${i === activeTab ? 'active' : ''}" onclick="switchTab(${i})">${g.icon} ${shortTitle}${cnt}</button>`;
   }).join('');
 
-  // Fields
   const group = FIELD_GROUPS[activeTab];
   let html = `<h3>${group.icon} ${group.title}</h3>`;
   group.fields.forEach(f => {
-    // Check showIf condition
-    if (f.showIf) {
-      const parentVal = formData[f.showIf.key] || '';
-      if (!f.showIf.val.includes(parentVal)) return; // hide field
-    }
     const val = formData[f.key] || '';
     const filledCls = val ? ' filled' : '';
-    const conditionalCls = f.showIf ? ' conditional-field' : '';
     if (f.type === 'select') {
       const opts = f.opts.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o || '-- Pilih --'}</option>`).join('');
-      html += `<div class="field${conditionalCls}"><label>${f.label}</label><select class="form-input${filledCls}" data-key="${f.key}" onchange="updateField(this)">${opts}</select></div>`;
+      html += `<div class="field"><label>${f.label}</label><select class="form-input${filledCls}" data-key="${f.key}" onchange="updateField(this)">${opts}</select></div>`;
     } else {
-      html += `<div class="field${conditionalCls}"><label>${f.label}</label><input type="${f.type}" class="form-input${filledCls}" data-key="${f.key}" value="${val}" placeholder="${f.ph || ''}" oninput="updateField(this)"></div>`;
+      html += `<div class="field"><label>${f.label}</label><input type="${f.type}" class="form-input${filledCls}" data-key="${f.key}" value="${val}" placeholder="${f.ph || ''}" oninput="updateField(this)"></div>`;
     }
   });
   document.getElementById('form-fields').innerHTML = html;
 
-  // Nav buttons
   let nav = '';
   if (activeTab > 0) nav += `<button class="btn btn-outline" style="flex:1" onclick="switchTab(${activeTab - 1})">← Sebelumnya</button>`;
   if (activeTab < FIELD_GROUPS.length - 1) nav += `<button class="btn btn-primary" style="flex:1" onclick="switchTab(${activeTab + 1})">Selanjutnya →</button>`;
   document.getElementById('form-nav').innerHTML = nav;
-
-  // Save button text
   document.getElementById('btn-save').textContent = `💾 Simpan Data (${filled}/${ALL_KEYS.length})`;
 }
 
@@ -500,47 +702,28 @@ function switchTab(i) {
 }
 
 function updateField(el) {
-  const changedKey = el.dataset.key;
-  formData[changedKey] = el.value;
+  formData[el.dataset.key] = el.value;
   el.classList.toggle('filled', !!el.value);
   const filled = ALL_KEYS.filter(k => formData[k] && formData[k] !== '').length;
   const pct = Math.round((filled / ALL_KEYS.length) * 100);
   document.getElementById('form-progress-fill').style.width = pct + '%';
   document.getElementById('form-progress-pct').textContent = pct + '%';
   document.getElementById('btn-save').textContent = `💾 Simpan Data (${filled}/${ALL_KEYS.length})`;
-
-  // Re-render if this field is a parent of a conditional field
-  const group = FIELD_GROUPS[activeTab];
-  const hasConditional = group.fields.some(f => f.showIf && f.showIf.key === changedKey);
-  if (hasConditional) {
-    renderForm();
-    return;
-  }
-
-  // Update tab count
-  const visibleFields = group.fields.filter(f => !f.showIf || f.showIf.val.includes(formData[f.showIf.key] || ''));
-  const gf = visibleFields.filter(f => formData[f.key] && formData[f.key] !== '').length;
-  const tabBtn = document.getElementById('tab-scroll').children[activeTab];
-  if (tabBtn) {
-    let cnt = tabBtn.querySelector('.cnt');
-    if (gf > 0) {
-      if (!cnt) { cnt = document.createElement('span'); cnt.className = 'cnt'; tabBtn.appendChild(cnt); }
-      cnt.textContent = `${gf}/${visibleFields.length}`;
-    } else if (cnt) cnt.remove();
-  }
 }
 
 async function saveData() {
   const btn = document.getElementById('btn-save');
   btn.textContent = '⏳ Menyimpan...';
   btn.disabled = true;
-  const inputBy = document.getElementById('inputBy').value || 'Anonim';
-  formData._inputBy = inputBy;
+  const userName = currentUser ? (currentUser.displayName || currentUser.email) : 'Anonim';
+  formData._inputBy = userName;
+  formData._inputEmail = currentUser ? currentUser.email : '';
   formData._lastUpdate = new Date().toISOString();
   formData._desa = currentDesa;
   formData._nama = currentChild;
-  await storageSet(sKey(currentDesa, currentChild), formData);
-  toast('✅ Data berhasil disimpan!', 'var(--green)');
+  const ok = await fbSet(currentDesa, currentChild, formData);
+  if (ok) toast('✅ Data berhasil disimpan!', 'var(--green)');
+  else toast('❌ Gagal menyimpan! Coba lagi.', 'var(--red)');
   btn.disabled = false;
   renderForm();
 }
@@ -560,70 +743,58 @@ async function openRekap(desa) {
   showPage('rekap');
   document.getElementById('rekap-content').innerHTML = '<p style="text-align:center;padding:40px;color:var(--text2)">Memuat data rekap...</p>';
 
-  const allData = {};
-  for (const child of DESA_DATA[desa]) {
-    const d = await storageGet(sKey(desa, child));
-    if (d) allData[child] = d;
-  }
-
+  const allData = await fbGetAllDesa(desa);
   const total = DESA_DATA[desa].length;
   const filled = Object.keys(allData).length;
   const entries = Object.entries(allData);
-  const complete = entries.filter(([,d]) => ALL_KEYS.filter(k => d[k] && d[k]!=='').length >= ALL_KEYS.length * 0.8).length;
-  const progPct = total > 0 ? Math.round((filled / total) * 100) : 0;
-
-  const count = (key, val) => entries.filter(([,d]) => d[key] === val).length;
+  const complete = entries.filter(([,d]) => ALL_KEYS.filter(k => d[k]&&d[k]!=='').length >= ALL_KEYS.length*0.8).length;
+  const progPct = total > 0 ? Math.round((filled/total)*100) : 0;
+  const cnt = (key,val) => entries.filter(([,d]) => d[key]===val).length;
 
   let html = `
     <div class="export-bar no-print">
       <button class="btn btn-green" style="flex:1" onclick="exportExcel('${desa}')">📥 Export Excel</button>
-      <button class="btn btn-amber" style="flex:1" onclick="exportExcelIndividu('${desa}')">📄 Excel Per-Anak</button>
+      <button class="btn btn-amber" style="flex:1" onclick="exportExcelIndividu('${desa}')">📄 Per-Anak</button>
       <button class="btn btn-outline" style="flex:1" onclick="window.print()">🖨️ Cetak</button>
     </div>
-
     <div class="stat-grid">
       <div class="stat-box"><div class="num" style="color:var(--primary)">${total}</div><div class="lbl">Total Balita</div></div>
       <div class="stat-box"><div class="num" style="color:var(--amber)">${filled}</div><div class="lbl">Sudah Diisi</div></div>
       <div class="stat-box"><div class="num" style="color:var(--green)">${complete}</div><div class="lbl">Lengkap ≥80%</div></div>
     </div>
-
     <div class="rekap-card">
       <h4>📈 Progress Pengisian</h4>
       <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <span style="font-size:13px;font-weight:600">${filled} dari ${total} balita</span>
+        <span style="font-size:13px;font-weight:600">${filled} dari ${total}</span>
         <span style="font-size:13px;font-weight:700;color:var(--primary)">${progPct}%</span>
       </div>
       <div style="height:10px;border-radius:5px;background:#f1f5f9;overflow:hidden">
-        <div style="height:100%;border-radius:5px;width:${progPct}%;background:linear-gradient(90deg,var(--primary),var(--green));transition:width .5s"></div>
+        <div style="height:100%;border-radius:5px;width:${progPct}%;background:linear-gradient(90deg,var(--primary),var(--green))"></div>
       </div>
     </div>`;
 
   if (filled > 0) {
-    html += `<div class="rekap-card">
-      <h4>📋 Ringkasan Data (${filled} anak terisi)</h4>
+    html += `<div class="rekap-card"><h4>📋 Ringkasan</h4>
       ${[
-        {l:'Riwayat BBLR',v:count('bblr','Ya'),c:'var(--red)'},
-        {l:'Imunisasi Lengkap',v:count('imunisasi','Lengkap'),c:'var(--green)'},
-        {l:'Punya BPJS',v:count('ban_bpjs','Ya')+count('ada_bpjs','Ya'),c:'var(--primary)'},
-        {l:'Dapat PKH',v:count('ban_pkh','Ya')+count('dapat_pkh','Ya'),c:'var(--amber)'},
-        {l:'Kelainan Bawaan',v:count('kelainan','Ada'),c:'var(--red)'},
-        {l:'Intervensi MBG',v:count('mbg','Ya'),c:'var(--green)'},
-        {l:'Dapat Susu',v:count('susu','Ya'),c:'var(--primary)'},
-        {l:'Obat Maltofer',v:count('maltofer','Ya'),c:'var(--amber)'},
-      ].map(s => `<div class="stat-row"><span class="slbl">${s.l}</span><span class="sval" style="color:${s.c}">${s.v} / ${filled}</span></div>`).join('')}
+        {l:'Riwayat BBLR',v:cnt('bblr','Ya'),c:'var(--red)'},
+        {l:'Imunisasi Lengkap',v:cnt('imunisasi','Lengkap'),c:'var(--green)'},
+        {l:'Punya BPJS',v:cnt('ban_bpjs','Ya')+cnt('ada_bpjs','Ya'),c:'var(--primary)'},
+        {l:'Dapat PKH',v:cnt('ban_pkh','Ya')+cnt('dapat_pkh','Ya'),c:'var(--amber)'},
+        {l:'Kelainan Bawaan',v:cnt('kelainan','Ada'),c:'var(--red)'},
+        {l:'Intervensi MBG',v:cnt('mbg','Ya'),c:'var(--green)'},
+        {l:'Dapat Susu',v:cnt('susu','Ya'),c:'var(--primary)'},
+        {l:'Obat Maltofer',v:cnt('maltofer','Ya'),c:'var(--amber)'},
+      ].map(s=>`<div class="stat-row"><span class="slbl">${s.l}</span><span class="sval" style="color:${s.c}">${s.v}/${filled}</span></div>`).join('')}
     </div>`;
   }
 
-  html += `<div class="rekap-card">
-    <h4>👶 Detail Per Anak</h4>
-    ${DESA_DATA[desa].map((child, i) => {
+  html += `<div class="rekap-card"><h4>👶 Detail Per Anak</h4>
+    ${DESA_DATA[desa].map((child,i) => {
       const d = allData[child];
-      const fc = d ? ALL_KEYS.filter(k => d[k] && d[k]!=='').length : 0;
-      const p = Math.round((fc / ALL_KEYS.length) * 100);
-      const meta = d && d._inputBy ? `<div class="dmeta">oleh ${d._inputBy} • ${new Date(d._lastUpdate).toLocaleDateString('id-ID')}</div>` : '';
-      const badge = p >= 80 ? '<span class="badge badge-done">'+p+'%</span>'
-                   : p > 0 ? '<span class="badge badge-partial">'+p+'%</span>'
-                   : '<span class="badge badge-empty">—</span>';
+      const fc = d ? ALL_KEYS.filter(k=>d[k]&&d[k]!=='').length : 0;
+      const p = Math.round((fc/ALL_KEYS.length)*100);
+      const meta = d&&d._inputBy ? `<div class="dmeta">oleh ${d._inputBy} • ${new Date(d._lastUpdate).toLocaleDateString('id-ID')}</div>` : '';
+      const badge = p>=80 ? `<span class="badge badge-done">${p}%</span>` : p>0 ? `<span class="badge badge-partial">${p}%</span>` : '<span class="badge badge-empty">—</span>';
       return `<div class="detail-row"><div><div class="dname">${i+1}. ${child}</div>${meta}</div>${badge}</div>`;
     }).join('')}
   </div>`;
@@ -632,132 +803,62 @@ async function openRekap(desa) {
 }
 
 // ═══════════════════════════════════════════
-// EXCEL EXPORT - REKAP PER DESA
+// EXCEL EXPORTS
 // ═══════════════════════════════════════════
 async function exportExcel(desa) {
   toast('⏳ Menyiapkan file Excel...', 'var(--primary)');
+  const allData = await fbGetAllDesa(desa);
   const children = DESA_DATA[desa];
-  const allData = {};
-  for (const child of children) {
-    const d = await storageGet(sKey(desa, child));
-    if (d) allData[child] = d;
-  }
-
-  // Header row
-  const headers = ['NO', 'NAMA BALITA', ...ALL_KEYS.map(k => ALL_LABELS[k]), 'PENGISI', 'TANGGAL INPUT'];
-
-  // Data rows
-  const rows = children.map((child, i) => {
+  const headers = ['NO','NAMA BALITA',...ALL_KEYS.map(k=>ALL_LABELS[k]),'PENGISI','TANGGAL'];
+  const rows = children.map((child,i) => {
     const d = allData[child] || {};
-    return [
-      i + 1,
-      child,
-      ...ALL_KEYS.map(k => d[k] || ''),
-      d._inputBy || '',
-      d._lastUpdate ? new Date(d._lastUpdate).toLocaleDateString('id-ID') : ''
-    ];
+    return [i+1, child, ...ALL_KEYS.map(k=>d[k]||''), d._inputBy||'', d._lastUpdate ? new Date(d._lastUpdate).toLocaleDateString('id-ID') : ''];
   });
-
   const wb = XLSX.utils.book_new();
-
-  // Sheet 1 - Data Lengkap
-  const wsData = [headers, ...rows];
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-  // Column widths
-  ws['!cols'] = headers.map((h, i) => ({ wch: i === 0 ? 5 : i === 1 ? 30 : Math.max(h.length + 2, 15) }));
-
-  // Style header (bold via cell formatting not supported in community XLSX, but we set it via merge info)
+  const ws = XLSX.utils.aoa_to_sheet([headers,...rows]);
+  ws['!cols'] = headers.map((h,i)=>({wch:i===0?5:i===1?30:Math.max(h.length+2,15)}));
   XLSX.utils.book_append_sheet(wb, ws, 'Data Lengkap');
 
-  // Sheet 2 - Ringkasan
+  // Ringkasan sheet
   const entries = Object.entries(allData);
-  const total = children.length;
-  const filled = entries.length;
-  const complete = entries.filter(([,d]) => ALL_KEYS.filter(k => d[k]&&d[k]!=='').length >= ALL_KEYS.length*0.8).length;
-  const cnt = (key, val) => entries.filter(([,d]) => d[key] === val).length;
-
-  const summaryData = [
-    ['REKAP VERVAL STUNTING 2026 - DESA ' + desa.toUpperCase()],
-    [''],
-    ['RINGKASAN', 'JUMLAH'],
-    ['Total Balita Stunting', total],
-    ['Data Sudah Diisi', filled],
-    ['Data Lengkap (≥80%)', complete],
-    ['Data Belum Diisi', total - filled],
-    [''],
-    ['INDIKATOR KESEHATAN', 'YA', 'TIDAK/LAINNYA'],
-    ['Riwayat BBLR', cnt('bblr','Ya'), cnt('bblr','Tidak')],
-    ['Imunisasi Lengkap', cnt('imunisasi','Lengkap'), filled - cnt('imunisasi','Lengkap')],
-    ['Kelainan Bawaan', cnt('kelainan','Ada'), cnt('kelainan','Tidak Ada')],
-    ['Mantoux Positif', cnt('mantoux','Positif'), cnt('mantoux','Negatif')],
-    ['Dapat Susu', cnt('susu','Ya'), cnt('susu','Tidak')],
-    ['Obat Maltofer', cnt('maltofer','Ya'), cnt('maltofer','Tidak')],
-    ['Intervensi MBG', cnt('mbg','Ya'), cnt('mbg','Tidak')],
-    [''],
-    ['STATUS BANTUAN', 'YA', 'TIDAK'],
-    ['BPJS', cnt('ban_bpjs','Ya')+cnt('ada_bpjs','Ya'), cnt('ban_bpjs','Tidak')+cnt('ada_bpjs','Tidak')],
-    ['PKH', cnt('ban_pkh','Ya')+cnt('dapat_pkh','Ya'), cnt('ban_pkh','Tidak')+cnt('dapat_pkh','Tidak')],
-    ['BPNT', cnt('ban_bpnt','Ya'), cnt('ban_bpnt','Tidak')],
-    [''],
-    ['PROGRESS PER ANAK', 'STATUS', '% TERISI', 'PENGISI'],
-    ...children.map((child, i) => {
-      const d = allData[child];
-      const fc = d ? ALL_KEYS.filter(k => d[k]&&d[k]!=='').length : 0;
-      const p = Math.round((fc / ALL_KEYS.length) * 100);
-      return [child, p >= 80 ? 'Lengkap' : p > 0 ? 'Sebagian' : 'Belum', p + '%', d?._inputBy || ''];
-    })
+  const cntFn = (key,val) => entries.filter(([,d])=>d[key]===val).length;
+  const summary = [
+    ['REKAP VERVAL STUNTING 2026 - DESA '+desa.toUpperCase()],[''],
+    ['RINGKASAN','JUMLAH'],['Total Balita',children.length],['Sudah Diisi',entries.length],
+    ['Lengkap ≥80%',entries.filter(([,d])=>ALL_KEYS.filter(k=>d[k]&&d[k]!=='').length>=ALL_KEYS.length*0.8).length],
+    [''],['INDIKATOR','YA','TIDAK'],
+    ['Riwayat BBLR',cntFn('bblr','Ya'),cntFn('bblr','Tidak')],
+    ['Imunisasi Lengkap',cntFn('imunisasi','Lengkap'),entries.length-cntFn('imunisasi','Lengkap')],
+    ['Kelainan Bawaan',cntFn('kelainan','Ada'),cntFn('kelainan','Tidak Ada')],
+    ['Intervensi MBG',cntFn('mbg','Ya'),cntFn('mbg','Tidak')],
+    [''],['PROGRESS','STATUS','%','PENGISI'],
+    ...children.map(c=>{const d=allData[c];const fc=d?ALL_KEYS.filter(k=>d[k]&&d[k]!=='').length:0;const p=Math.round((fc/ALL_KEYS.length)*100);return[c,p>=80?'Lengkap':p>0?'Sebagian':'Belum',p+'%',d?._inputBy||'']})
   ];
-
-  const ws2 = XLSX.utils.aoa_to_sheet(summaryData);
-  ws2['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 20 }];
+  const ws2 = XLSX.utils.aoa_to_sheet(summary);
+  ws2['!cols']=[{wch:30},{wch:15},{wch:10},{wch:20}];
   XLSX.utils.book_append_sheet(wb, ws2, 'Ringkasan');
-
   XLSX.writeFile(wb, `Rekap_Stunting_${desa}_${new Date().toISOString().slice(0,10)}.xlsx`);
   toast('✅ File Excel berhasil diunduh!', 'var(--green)');
 }
 
-// ═══════════════════════════════════════════
-// EXCEL EXPORT - PER INDIVIDU (FORMAT FORM)
-// ═══════════════════════════════════════════
 async function exportExcelIndividu(desa) {
-  toast('⏳ Menyiapkan file Excel per-anak...', 'var(--primary)');
-  const children = DESA_DATA[desa];
+  toast('⏳ Menyiapkan file per-anak...', 'var(--primary)');
+  const allData = await fbGetAllDesa(desa);
   const wb = XLSX.utils.book_new();
-
-  for (const child of children) {
-    const d = await storageGet(sKey(desa, child)) || {};
-    const rows = [
-      ['FORM VERVAL STUNTING 2026'],
-      ['Desa: ' + desa],
-      ['Nama Balita: ' + child],
-      ['Tanggal Input: ' + (d._lastUpdate ? new Date(d._lastUpdate).toLocaleDateString('id-ID') : '-')],
-      ['Pengisi: ' + (d._inputBy || '-')],
-      ['']
-    ];
-
-    FIELD_GROUPS.forEach(g => {
-      rows.push([g.icon + ' ' + g.title.toUpperCase()]);
-      g.fields.forEach(f => {
-        rows.push([f.label, d[f.key] || '-']);
-      });
-      rows.push(['']);
-    });
-
-    const sheetName = child.slice(0, 28).replace(/[\\\/\?\*\[\]]/g, '');
+  for (const child of DESA_DATA[desa]) {
+    const d = allData[child] || {};
+    const rows = [['FORM VERVAL STUNTING 2026'],['Desa: '+desa],['Nama: '+child],
+      ['Tanggal: '+(d._lastUpdate?new Date(d._lastUpdate).toLocaleDateString('id-ID'):'-')],['Pengisi: '+(d._inputBy||'-')],['']];
+    FIELD_GROUPS.forEach(g => { rows.push([g.icon+' '+g.title.toUpperCase()]); g.fields.forEach(f => rows.push([f.label, d[f.key]||'-'])); rows.push(['']); });
+    const sn = child.slice(0,28).replace(/[\\\/\?\*\[\]]/g,'');
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols'] = [{ wch: 35 }, { wch: 30 }];
-    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    ws['!cols']=[{wch:35},{wch:30}];
+    XLSX.utils.book_append_sheet(wb, ws, sn);
   }
-
-  XLSX.writeFile(wb, `Form_Individu_Stunting_${desa}_${new Date().toISOString().slice(0,10)}.xlsx`);
-  toast('✅ File Excel per-anak berhasil diunduh!', 'var(--green)');
+  XLSX.writeFile(wb, `Individu_Stunting_${desa}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('✅ File per-anak berhasil diunduh!', 'var(--green)');
 }
 
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
-renderHome();
 </script>
 </body>
 </html>
