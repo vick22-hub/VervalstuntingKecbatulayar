@@ -369,12 +369,10 @@ const FIELD_GROUPS = [
   ]},
   { title:"Kesehatan Anak", icon:"💊", fields:[
     {key:"imunisasi",label:"Status Imunisasi Lengkap",type:"select",opts:["","Lengkap","Tidak Lengkap","Belum Imunisasi"]},
+    {key:"imunisasi_ket",label:"Keterangan Imunisasi Tidak Lengkap",type:"text",ph:"Jelaskan imunisasi apa yang belum...",showIf:{key:"imunisasi",val:"Tidak Lengkap"}},
     {key:"penyakit",label:"Penyakit Yg Sering Diderita",type:"text"},
     {key:"kelainan",label:"Kelainan Bawaan",type:"select",opts:["","Ada","Tidak Ada"]},
-    {key:"mantoux",label:"Hasil Tes Mantoux",type:"select",opts:["","Positif","Negatif","Belum Diperiksa"]},
-    {key:"hb",label:"Hasil Periksa Hb (g/dL)",type:"text",ph:"Contoh: 11.5"},
-    {key:"maltofer",label:"Obat/Vitamin (Maltofer)",type:"select",opts:["","Ya","Tidak"]},
-    {key:"susu",label:"Dapat Susu",type:"select",opts:["","Ya","Tidak"]},
+    {key:"kelainan_ket",label:"Keterangan Kelainan Bawaan",type:"text",ph:"Jelaskan jenis kelainan bawaan...",showIf:{key:"kelainan",val:"Ada"}},
   ]},
   { title:"Air & Jaminan", icon:"💧", fields:[
     {key:"air_minum",label:"Sumber Air Minum & Dimasak/Tidak",type:"text"},
@@ -649,6 +647,7 @@ function renderForm() {
   const group = FIELD_GROUPS[activeTab];
   let html = `<h3>${group.icon} ${group.title}</h3>`;
   group.fields.forEach(f => {
+    if (f.showIf && formData[f.showIf.key] !== f.showIf.val) return;
     const val = formData[f.key] || '';
     const filledCls = val ? ' filled' : '';
     if (f.type === 'select') {
@@ -676,11 +675,8 @@ function switchTab(i) {
 function updateField(el) {
   formData[el.dataset.key] = el.value;
   el.classList.toggle('filled', !!el.value);
+  if (el.tagName === 'SELECT') { renderForm(); return; }
   const filled = ALL_KEYS.filter(k => formData[k] && formData[k] !== '').length;
-  const pct = Math.round((filled / ALL_KEYS.length) * 100);
-  document.getElementById('form-progress-fill').style.width = pct + '%';
-  document.getElementById('form-progress-pct').textContent = pct + '%';
-  document.getElementById('btn-save').textContent = `💾 Simpan Data (${filled}/${ALL_KEYS.length})`;
 }
 
 async function saveData() {
