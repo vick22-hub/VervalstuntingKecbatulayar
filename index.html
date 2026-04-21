@@ -374,10 +374,9 @@ const FIELD_GROUPS = [
     {key:"kelainan",label:"Kelainan Bawaan",type:"select",opts:["","Ada","Tidak Ada"]},
     {key:"kelainan_ket",label:"Keterangan Kelainan Bawaan",type:"text",ph:"Jelaskan jenis kelainan bawaan...",showIf:{key:"kelainan",val:"Ada"}},
   ]},
-  { title:"Air & Jaminan", icon:"💧", fields:[
-    {key:"air_minum",label:"Sumber Air Minum & Dimasak/Tidak",type:"text"},
-    {key:"ada_bpjs",label:"Ada BPJS/Tidak",type:"select",opts:["","Ya","Tidak"]},
-    {key:"dapat_pkh",label:"Dapat PKH/Tidak",type:"select",opts:["","Ya","Tidak"]},
+  { title:"Air Bersih & MBG", icon:"💧", fields:[
+    {key:"air_minum",label:"Sumber Air Minum",type:"select",opts:["","PDAM","Air Isi Ulang","Sumur","Kali"]},
+    {key:"air_dimasak",label:"Dimasak/Tidak",type:"select",opts:["","Ya","Tidak"]},
     {key:"mbg",label:"Intervensi (MBG)",type:"select",opts:["","Ya","Tidak"]},
   ]},
   { title:"Tempat Tinggal", icon:"🏡", fields:[
@@ -746,8 +745,8 @@ async function openRekap(desa) {
       ${[
         {l:'Riwayat BBLR',v:cnt('bblr','Ya'),c:'var(--red)'},
         {l:'Imunisasi Lengkap',v:cnt('imunisasi','Lengkap'),c:'var(--green)'},
-        {l:'Punya BPJS',v:cnt('ban_bpjs','Ya')+cnt('ada_bpjs','Ya'),c:'var(--primary)'},
-        {l:'Dapat PKH',v:cnt('ban_pkh','Ya')+cnt('dapat_pkh','Ya'),c:'var(--amber)'},
+        {l:'Punya BPJS',v:cnt('ban_bpjs','Ya'),c:'var(--primary)'},
+        {l:'Dapat PKH',v:cnt('ban_pkh','Ya'),c:'var(--amber)'},
         {l:'Kelainan Bawaan',v:cnt('kelainan','Ada'),c:'var(--red)'},
         {l:'Intervensi MBG',v:cnt('mbg','Ya'),c:'var(--green)'},
         {l:'Dapat Susu',v:cnt('susu','Ya'),c:'var(--primary)'},
