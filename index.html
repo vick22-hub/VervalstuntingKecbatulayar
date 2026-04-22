@@ -375,7 +375,7 @@ const FIELD_GROUPS = [
     {key:"kelainan_ket",label:"Keterangan Kelainan Bawaan",type:"text",ph:"Jelaskan jenis kelainan bawaan...",showIf:{key:"kelainan",val:"Ada"}},
   ]},
   { title:"Air Bersih & MBG", icon:"💧", fields:[
-    {key:"air_minum",label:"Sumber Air Minum",type:"select",opts:["","PDAM","Air Isi Ulang","Sumur","Kali"]},
+    {key:"air_minum",label:"Sumber Air Minum",type:"select",opts:["","PDAM","Air Isi Ulang","Sumur","sungai"]},
     {key:"air_dimasak",label:"Dimasak/Tidak",type:"select",opts:["","Ya","Tidak"]},
     {key:"mbg",label:"Intervensi (MBG)",type:"select",opts:["","Ya","Tidak"]},
   ]},
@@ -385,8 +385,7 @@ const FIELD_GROUPS = [
     {key:"jenis_atap",label:"Jenis Atap",type:"select",opts:["","Genteng","Seng","Asbes","Jerami","Lainnya"]},
     {key:"tembok",label:"Tembok",type:"select",opts:["","Batu Bata","Kayu","Bambu","Lainnya"]},
     {key:"sanitasi",label:"Sanitasi",type:"select",opts:["","Baik","Cukup","Kurang"]},
-    {key:"jamban",label:"Jamban",type:"select",opts:["","Ada - Sendiri","Ada - Bersama","Tidak Ada"]},
-    {key:"sumber_air",label:"Sumber Air",type:"select",opts:["","PDAM","Sumur","Mata Air","Sungai","Lainnya"]},
+    {key:"jamban",label:"Jamban",type:"select",opts:["","Ada - Sendiri","Ada - Bersama","Tidak Ada"]},    
   ]},
   { title:"KB", icon:"📋", fields:[
     {key:"kb",label:"Kepesertaan KB",type:"select",opts:["","Ya - Suntik","Ya - Pil","Ya - Implant","Ya - IUD","Ya - Lainnya","Tidak"]},
