@@ -401,6 +401,7 @@ FIELD_GROUPS.forEach(g => g.fields.forEach(f => { ALL_LABELS[f.key] = f.label; }
 // STATE
 // ═══════════════════════════════════════════
 let currentUser = null;
+let currentRole = 'operator';
 let currentDesa = '';
 let currentChild = '';
 let formData = {};
@@ -463,7 +464,7 @@ async function doRegister() {
     await cred.user.updateProfile({ displayName: name });
     // Simpan info user ke Firestore
     await db.collection('users').doc(cred.user.uid).set({
-      name: name, email: email, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      name: name, email: email, role: 'operator', createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
   } catch (e) {
     const msgs = {
@@ -481,10 +482,19 @@ function doLogout() {
 }
 
 // ═══════ AUTH STATE LISTENER ═══════
-auth.onAuthStateChanged(user => {
+auth.onAuthStateChanged(async user => {
   currentUser = user;
   if (user) {
-    document.getElementById('display-user').textContent = user.displayName || user.email;
+    try {
+      const doc = await db.collection('users').doc(user.uid).get();
+      if (doc.exists && doc.data().role) {
+        currentRole = doc.data().role;
+      } else {
+        currentRole = 'operator';
+      }
+    } catch(e) { currentRole = 'operator'; }
+    const roleLabel = currentRole === 'viewer' ? ' (Hanya Lihat)' : currentRole === 'admin' ? ' (Admin)' : '';
+    document.getElementById('display-user').textContent = (user.displayName || user.email) + roleLabel;
     showPage('home');
     renderHome();
   } else {
@@ -561,7 +571,7 @@ function renderHome() {
         <div class="count">${DESA_DATA[desa].length} balita stunting</div>
       </div></div>
       <div class="btns">
-        <button class="btn btn-primary" onclick="openChildren('${desa}')">📝 Input Data</button>
+        ${currentRole !== 'viewer' ? `<button class="btn btn-primary" onclick="openChildren('${desa}')">📝 Input Data</button>` : `<button class="btn btn-primary" onclick="openChildren('${desa}')">👁️ Lihat Data</button>`}
         <button class="btn btn-outline" onclick="openRekap('${desa}')">📊 Rekap</button>
       </div>
     </div>
@@ -649,11 +659,12 @@ function renderForm() {
     if (f.showIf && formData[f.showIf.key] !== f.showIf.val) return;
     const val = formData[f.key] || '';
     const filledCls = val ? ' filled' : '';
+    const dis = currentRole === 'viewer' ? ' disabled' : '';
     if (f.type === 'select') {
       const opts = f.opts.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o || '-- Pilih --'}</option>`).join('');
-      html += `<div class="field"><label>${f.label}</label><select class="form-input${filledCls}" data-key="${f.key}" onchange="updateField(this)">${opts}</select></div>`;
+      html += `<div class="field"><label>${f.label}</label><select class="form-input${filledCls}" data-key="${f.key}" onchange="updateField(this)"${dis}>${opts}</select></div>`;
     } else {
-      html += `<div class="field"><label>${f.label}</label><input type="${f.type}" class="form-input${filledCls}" data-key="${f.key}" value="${val}" placeholder="${f.ph || ''}" oninput="updateField(this)"></div>`;
+      html += `<div class="field"><label>${f.label}</label><input type="${f.type}" class="form-input${filledCls}" data-key="${f.key}" value="${val}" placeholder="${f.ph || ''}" oninput="updateField(this)"${dis}></div>`;
     }
   });
   document.getElementById('form-fields').innerHTML = html;
@@ -662,7 +673,15 @@ function renderForm() {
   if (activeTab > 0) nav += `<button class="btn btn-outline" style="flex:1" onclick="switchTab(${activeTab - 1})">← Sebelumnya</button>`;
   if (activeTab < FIELD_GROUPS.length - 1) nav += `<button class="btn btn-primary" style="flex:1" onclick="switchTab(${activeTab + 1})">Selanjutnya →</button>`;
   document.getElementById('form-nav').innerHTML = nav;
-  document.getElementById('btn-save').textContent = `💾 Simpan Data (${filled}/${ALL_KEYS.length})`;
+  if (currentRole === 'viewer') {
+    document.getElementById('btn-save').textContent = '🔒 Mode Hanya Lihat';
+    document.getElementById('btn-save').disabled = true;
+    document.getElementById('btn-save').style.background = '#94a3b8';
+  } else {
+    document.getElementById('btn-save').textContent = `💾 Simpan Data (${filled}/${ALL_KEYS.length})`;
+    document.getElementById('btn-save').disabled = false;
+    document.getElementById('btn-save').style.background = '';
+  }
 }
 
 function switchTab(i) {
@@ -679,6 +698,7 @@ function updateField(el) {
 }
 
 async function saveData() {
+  if (currentRole === 'viewer') { toast('🔒 Akun Anda hanya bisa melihat data', 'var(--red)'); return; }
   const btn = document.getElementById('btn-save');
   btn.textContent = '⏳ Menyimpan...';
   btn.disabled = true;
