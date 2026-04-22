@@ -492,8 +492,9 @@ auth.onAuthStateChanged(async user => {
       } else {
         currentRole = 'operator';
       }
-    } catch(e) { currentRole = 'operator'; }
+    } catch(e) { currentRole = 'operator'; console.log('Error baca role:', e); }
     const roleLabel = currentRole === 'viewer' ? ' (Hanya Lihat)' : currentRole === 'admin' ? ' (Admin)' : '';
+    alert('Role terdeteksi: ' + currentRole);
     document.getElementById('display-user').textContent = (user.displayName || user.email) + roleLabel;
     showPage('home');
     renderHome();
